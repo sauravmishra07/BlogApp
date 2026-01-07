@@ -29,7 +29,7 @@ const schema = new Schema<IUser>(
         },
         image: {
             type: String,
-            required: true,
+            // required: true,
         },
         instagram: {
             type: String,

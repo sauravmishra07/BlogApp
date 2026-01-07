@@ -3,6 +3,8 @@ import User from "../model/User.js";
 import jwt from "jsonwebtoken";
 import TryCatch from "../utils/TryCatch.js";
 import type { AuthenticatedRequest } from "../middleware/isAuth.js";
+import getBuffer from "../utils/dataUri.js";
+import { v2 as cloudinary } from "cloudinary";
 
 export const loginUser = TryCatch(async (req, res) => {
   const { email, name, image } = req.body;
@@ -17,7 +19,7 @@ export const loginUser = TryCatch(async (req, res) => {
   });
 
   res.status(200).json({
-    message: "User logged in successfully",
+    message: "✅ User logged in successfully",
     user,
     token,
   });
@@ -31,38 +33,91 @@ export const myProfile = TryCatch(
   }
 );
 
-export const getUserProfile = TryCatch(async (req: AuthenticatedRequest, res) => {
-  const user = await User.findById(req.params.id);
+export const getUserProfile = TryCatch(
+  async (req: AuthenticatedRequest, res) => {
+    const user = await User.findById(req.params.id);
 
-  if(!user) {
-    res.status(404).json({
-      message: "User not found"
-    });
-    return;
+    if (!user) {
+      res.status(404).json({
+        message: "❌ User not found",
+      });
+      return;
+    }
+    res.json(user);
   }
-  res.json(user);
-});
+);
 
 export const updateUser = TryCatch(async (req: AuthenticatedRequest, res) => {
-  const { name, bio, facebook, instagram, linkedin} = req.body;
+  const { name, bio, facebook, instagram, linkedin } = req.body;
 
-  const user = await User.findByIdAndUpdate(req.user?._id, {
-    name,
-    bio,
-    facebook,
-    instagram,
-    linkedin
-  }, {
-    new: true
-  });
+  const user = await User.findByIdAndUpdate(
+    req.user?._id,
+    {
+      name,
+      bio,
+      facebook,
+      instagram,
+      linkedin,
+    },
+    {
+      new: true,
+    }
+  );
 
   const token = jwt.sign({ user }, process.env.JWT_SECRET as string, {
     expiresIn: "5d",
   });
 
   res.status(200).json({
-    message: "User Updated successfully",
-    user, 
+    message: "✅ User Updated successfully",
+    user,
     token,
-  })
-})
+  });
+});
+
+export const updateProfilePicture = TryCatch(
+  async (req: AuthenticatedRequest, res) => {
+    const file = req.file;
+
+    if (!file) {
+      res.status(400).json({
+        message: "❌ No file to Upload",
+      });
+      return;
+    }
+
+    const fileBuffer = getBuffer(file);
+
+    if (!fileBuffer) {
+      res.status(400).json({
+        message: "❌ Failed to generate file buffer",
+      });
+      return;
+    }
+    const cloud = await cloudinary.uploader.upload(
+      fileBuffer.content as string,
+      {
+        folder: "blogs_profile_pictures",
+      }
+    );
+
+    const user = await User.findByIdAndUpdate(
+      req.user?._id,
+      {
+        image: cloud.secure_url,
+      },
+      {
+        new: true,
+      }
+    );
+    const token = jwt.sign({ user }, process.env.JWT_SECRET as string, {
+      expiresIn: "5d",
+    });
+
+    res.status(200).json({
+      message: "✅ User Updated successfully",
+      user,
+      token,
+    });
+  }
+);

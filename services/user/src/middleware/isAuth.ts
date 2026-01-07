@@ -15,7 +15,7 @@ export const isAuth = async (
 
         if(!authHeader || !authHeader.startsWith("Bearer ")){
              res.status(401).json({
-                message: "Please Login -- No token"
+                message: "❌ Please Login -- No token"
             });
             return;
         }
@@ -25,7 +25,7 @@ export const isAuth = async (
         const jwtSecret = process.env.JWT_SECRET;
         if (!jwtSecret) {
             res.status(500).json({
-                message: "Server configuration error"
+                message: "❌ Server configuration error"
             });
             return;
         }
@@ -34,7 +34,7 @@ export const isAuth = async (
 
         if (!decodedValue) {
             res.status(401).json({
-                message: "Please Login -- Invalid token"
+                message: "❌Please Login -- Invalid token"
             });
             return;
         }
@@ -45,7 +45,7 @@ export const isAuth = async (
     catch (error: any) {
         console.error("Authentication Error:", error);
         res.status(401).json({
-            message: "Please Login -- JWT error"
+            message: "❌ Please Login -- JWT error"
         });
     }
 }
