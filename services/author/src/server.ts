@@ -25,7 +25,7 @@ async function initDB() {
             description VARCHAR(255) NOT NULL,
             blogcontent TEXT NOT NULL,
             image VARCHAR(255) NOT NULL,
-            author VARCHAR(100) NOT NULL,
+            author VARCHAR(255) NOT NULL,
             created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
             );
             `;
