@@ -97,7 +97,7 @@ export const updateProfilePicture = TryCatch(
     const cloud = await cloudinary.uploader.upload(
       fileBuffer.content as string,
       {
-        folder: "blogs_profile_pictures",
+        folder: "profile_pictures",
       }
     );
 
