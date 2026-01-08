@@ -109,3 +109,43 @@ export const updateBlog = TryCatch(async (req: AuthenticatedRequest, res) => {
     .json({ message: "✅ Blog updated successfully", blog: updatedBlog[0] });
 });
 
+export const deleteBlog = TryCatch(async (req: AuthenticatedRequest, res) => {
+  const blog = await sql`
+  SELECT * FROM blogs WHERE id = ${req.params.id}
+`;
+
+  if (!Array.isArray(blog) || blog.length === 0) {
+    return res.status(404).json({ message: "❌ Blog not found with this id" });
+  }
+
+  const existing = blog[0] as {
+    author_id?: string;
+    author?: string;
+  };
+
+  const userId = req.user && req.user._id;
+  if (typeof userId !== "string") {
+    return res.status(401).json({ message: "❌ Unauthorized" });
+  }
+
+  const blogAuthor = existing.author_id || existing.author;
+  if (blogAuthor !== userId) {
+    return res
+      .status(403)
+      .json({ message: "❌ You are not authorized to delete this blog" });
+  }
+
+  await sql`
+    DELETE FROM savedblogs WHERE id = ${req.params.id}
+  `;
+  await sql`
+    DELETE FROM comments WHERE blogid = ${req.params.id}
+  `;
+  await sql`
+    DELETE FROM blogs WHERE id = ${req.params.id}
+  `;
+
+  res.status(200).json({
+    message: "✅ Blog deleted successfully",
+  });
+});
