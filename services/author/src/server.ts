@@ -2,8 +2,16 @@ import express from "express";
 import dotenv from "dotenv";
 import { sql } from "./utils/db.js";
 import blogRoutes from "./routes/blog.js";
+import { v2 as cloudinary } from "cloudinary";
+
+
 dotenv.config();
 
+cloudinary.config({
+  cloud_name: process.env.cloudinary_cloud_name!,
+  api_key: process.env.cloudinary_api_key!,
+  api_secret: process.env.cloudinary_api_secret!, 
+});
 const app = express();
 
 const port = process.env.PORT;
